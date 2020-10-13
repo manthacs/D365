@@ -1,0 +1,65 @@
+class DataEntityReader
+{
+    private str dataEntities;
+	#File
+
+    protected void new()
+    {
+    }
+
+    public void read()
+    {
+        List deList = strSplit(dataEntities, ',');
+        ListEnumerator enum = deList.getEnumerator();
+        str fileContent;
+        fileContent = strFmt('%1, %2, %3, %4, %5', 'Entity Name', 'Entity system name', 'Table name', 'Table system name', 'Is child entity');
+        while (enum.moveNext())
+        {
+            str dataEntity = enum.current();
+            DictDataEntity dictDE = new DictDataEntity(tableName2Id(dataEntity));
+            if (dictDE)
+            {
+                int cntOfDS = dictDE.datasourceCnt();
+                int i = 1;
+
+                for (i = 1; i <= cntOfDS; i++)
+                {
+                    TableId tableId = dictDE.datasourceID2TableId(i);
+                    DictDataEntity dictDeChild = new DictDataEntity(tableId);
+                    boolean isEntity = false;
+					if (dictDeChild)
+                    {
+                        isEntity = true;
+                    }
+                    fileContent += #delimiterCRLF + strFmt('%1, %2, %3, %4, %5', dictDe.label(), dictDE.name(), tableId2PName(tableId), tableId2Name(tableId), isEntity);
+                    
+                }
+
+            }
+            else 
+            {
+                error (strFmt("Data entity '%1' not found", dataEntity));
+            }
+
+			if ('' != fileContent)
+            {
+                File::SendStringAsFileToUser(fileContent, 'de.csv');
+            }
+
+        }
+    }
+
+    public static void main(Args args)
+    {
+        Dialog dlg = new Dialog();
+        DialogField dlf = dlg.addField("Description255", "Data entity name", "Data entity names separated by a comma.");
+        if (dlg.run())
+        {
+            str des = dlf.value();
+            DataEntityReader reader = new DataEntityReader();
+            reader.dataEntities= des;
+            reader.read();
+        }
+    }
+
+}
