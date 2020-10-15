@@ -1,17 +1,18 @@
-class DataEntityReader
+class COLDataEntityReader
 {
     private str dataEntities;
+    private str fileContent;
 	#File
 
     protected void new()
     {
     }
 
-    public void read()
+    public void readDs()
     {
         List deList = strSplit(dataEntities, ',');
         ListEnumerator enum = deList.getEnumerator();
-        str fileContent;
+        
         fileContent = strFmt('%1, %2, %3, %4, %5', 'Entity Name', 'Entity system name', 'Table name', 'Table system name', 'Is child entity');
         while (enum.moveNext())
         {
@@ -41,9 +42,49 @@ class DataEntityReader
                 error (strFmt("Data entity '%1' not found", dataEntity));
             }
 
-			if ('' != fileContent)
+			
+
+        }
+    }
+
+	public void endFile()
+    {
+        if ('' != fileContent)
+        {
+            File::SendStringAsFileToUser(fileContent, 'DeMetaData.csv');
+        }
+    }
+
+	public void readFields()
+    {
+        List deList = strSplit(dataEntities, ',');
+        ListEnumerator enum = deList.getEnumerator();
+        
+        fileContent += #delimiterCRLF + strFmt('%1, %2, %3, %4, %5, %6, %7', 'Entity Name', 'Entity system name', 'Field Name', 'Label', 'Help text', 'Mapped table', 'Mapped field');
+        while (enum.moveNext())
+        {
+            str dataEntity = enum.current();
+            TableId dataEntityId = tableName2Id(dataEntity);
+            DictDataEntity dictDE = new DictDataEntity(dataEntityId);
+            if (dictDE)
             {
-                File::SendStringAsFileToUser(fileContent, 'de.csv');
+				
+                int cntOfFld = dictDE.fieldCnt();
+                int i = 1;
+
+                for (i = 1; i <= cntOfFld; i++)
+                {
+                    FieldId fieldId = dictDe.fieldCnt2Id(i);
+                    DictDataEntityField dfe = new DictDataEntityField(dataEntityId, fieldId);
+
+                    fileContent += #delimiterCRLF + strFmt('%1, %2, %3, %4, %5, %6, %7', dictDe.label(), dictDE.name(), dfe.name(), dfe.label(), dfe.help(), dfe.dataSource(), dfe.dataField());
+                    
+                }
+
+            }
+            else
+            {
+                error (strFmt("Data entity '%1' not found", dataEntity));
             }
 
         }
@@ -56,9 +97,11 @@ class DataEntityReader
         if (dlg.run())
         {
             str des = dlf.value();
-            DataEntityReader reader = new DataEntityReader();
+            COLDataEntityReader reader = new COLDataEntityReader();
             reader.dataEntities= des;
-            reader.read();
+            reader.readDs();
+            reader.readFields();
+            reader.endFile();
         }
     }
 
