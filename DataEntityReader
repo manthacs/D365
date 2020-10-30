@@ -2,7 +2,7 @@ class COLDataEntityReader
 {
     private str dataEntities;
     private str fileContent;
-	#File
+    #File
 
     protected void new()
     {
@@ -28,7 +28,7 @@ class COLDataEntityReader
                     TableId tableId = dictDE.datasourceID2TableId(i);
                     DictDataEntity dictDeChild = new DictDataEntity(tableId);
                     boolean isEntity = false;
-					if (dictDeChild)
+                    if (dictDeChild)
                     {
                         isEntity = true;
                     }
@@ -37,17 +37,14 @@ class COLDataEntityReader
                 }
 
             }
-            else 
+            else
             {
                 error (strFmt("Data entity '%1' not found", dataEntity));
             }
-
-			
-
         }
     }
 
-	public void endFile()
+    public void endFile()
     {
         if ('' != fileContent)
         {
@@ -55,12 +52,13 @@ class COLDataEntityReader
         }
     }
 
-	public void readFields()
+    public void readFields()
     {
         List deList = strSplit(dataEntities, ',');
         ListEnumerator enum = deList.getEnumerator();
         
-        fileContent += #delimiterCRLF + strFmt('%1, %2, %3, %4, %5, %6, %7', 'Entity Name', 'Entity system name', 'Field Name', 'Label', 'Help text', 'Mapped table', 'Mapped field');
+        fileContent += #delimiterCRLF + strFmt('%1, %2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12', 
+            'Entity Name', 'Entity system name', 'Field Name', 'Label', 'Help text', 'Mapped table', 'Mapped field', 'Type', 'String length', 'Is computed field', 'Access modifier', 'Is system field');
         while (enum.moveNext())
         {
             str dataEntity = enum.current();
@@ -68,7 +66,7 @@ class COLDataEntityReader
             DictDataEntity dictDE = new DictDataEntity(dataEntityId);
             if (dictDE)
             {
-				
+    
                 int cntOfFld = dictDE.fieldCnt();
                 int i = 1;
 
@@ -77,7 +75,8 @@ class COLDataEntityReader
                     FieldId fieldId = dictDe.fieldCnt2Id(i);
                     DictDataEntityField dfe = new DictDataEntityField(dataEntityId, fieldId);
 
-                    fileContent += #delimiterCRLF + strFmt('%1, %2, %3, %4, %5, %6, %7', dictDe.label(), dictDE.name(), dfe.name(), dfe.label(), dfe.help(), dfe.dataSource(), dfe.dataField());
+                    fileContent += #delimiterCRLF + strFmt('%1, %2, %3, %4, %5, %6, %7, %8, %9, %10, %11, %12',
+                        dictDe.label(), dictDE.name(), dfe.name(), dfe.label(), dfe.help(), dfe.dataSource(), dfe.dataField(), dfe.type(), dfe.stringLen(), dfe.IsComputedField(), dfe.accessModifier(), dfe.isSystem());
                     
                 }
 
